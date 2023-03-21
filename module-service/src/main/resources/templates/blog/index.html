@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>블로그 검색</title>
+	<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+	<link rel="stylesheet" href="/css/blog.css">
+</head>
+<body>
+	<div class="wrap p-5 m-5">
+		<div class="form-group row mt-3 mb-2">
+			<div class="col-6 pr-0">
+				<input id="input-search-query" type="text" class="form-control" placeholder="블로그 검색" value="판교에서 가장 맛있는 치킨가게">
+			</div>
+			<div class="col-2 p-0">
+				<select class="form-control" id="select-sort">
+				    <option value="ACCURACY">정확성</option>
+				    <option value="DATE">날짜</option>
+				</select>
+			</div>
+			<div class="col-2">
+				<button class="btn btn-success" type="button" id="btn-search">검색</button>
+			</div>
+		</div>
+		
+		<div class="mt-3 mb-5">
+			검색어 순위 TOP 10
+			<button th:each="topKeyword : ${topKeywords}" type="button" class="btn btn-secondary btn-sm mx-1 btn-keyword">
+				<span class="span-keyword" th:text="${topKeyword.keyword}"></span>
+				<span class="badge badge-light" th:text="${topKeyword.count}"></span>
+			</button>
+		</div>
+		<table id="table-blogs" class="table table-hover table-bordered">
+			<colgroup>
+				<col width="10%">
+				<col width="10%">
+				<col width="55%">
+				<col width="10%">
+				<col width="10%">
+				<col width="5%">
+			</colgroup>
+		  <thead>
+		    <tr>
+		      <th scope="col">블로그이름</th>
+		      <th scope="col">제목</th>
+		      <th scope="col">내용</th>
+		      <th scope="col">썸네일</th>
+		      <th scope="col">생성일</th>
+		      <th scope="col">링크</th>
+		    </tr>
+		  </thead>
+		  <tbody>
+		    <tr>
+		      <th class="text-center " scope="row" colspan="6">검색어를 입력 주세요.</th>
+		    </tr>
+		  </tbody>
+		</table>
+		<div class="d-flex justify-content-center">
+			<ul id="ul-pagination" class="pagination"></ul>
+		</div>
+	</div>
+</body>
+<script>
+	$(function() {
+		
+		var ROWS_PER_PAGE = 10;
+		var PAGES_PER_BLOCK = 10;
+		var currentPage = 1;
+		var maxPage = Infinity;
+		
+		
+		// 검색 가능여부 확인
+		function isValid() {
+			var query = $("#input-search-query").val();
+			if(!query) {
+				alert('검색어를 입력해주세요.');
+				return;
+			}
+			var sort = $('#select-sort').val();
+			if(!sort) {
+				alert('검색방법을 선택해주세요.');
+				return;
+			}
+			
+			var paramObject = {
+				query: query,
+				sort: sort,
+				page: currentPage,
+				size: ROWS_PER_PAGE
+			}
+			
+			return paramObject;
+			
+		}
+		
+		// 블로그 조회
+		function getBlogs(isSearch) {
+			var paramObject = isValid();
+			if(!paramObject) {
+				return;
+			}
+
+			paramObject.isSearch = !!isSearch;
+			
+			var params = Object.entries(paramObject).map(keyval => keyval[0] + '=' + keyval[1]).join('&');
+			
+			$.ajax({
+			    url: "/v1/blog" + '?' + params,
+			    dataType: "json"
+			})
+			.done(function(response) {
+				pageRender(response);
+				tableRender(response);
+			})
+			.fail(function(xhr, status, errorThrown) {
+			    alert('오류 발생');
+			})
+		}
+		
+		// 페이지 렌더링
+		function pageRender(response) {
+			maxPage = response.body.totalPage;
+			var currentBlock = Math.floor((currentPage - 1) / PAGES_PER_BLOCK);
+			var startPage = currentBlock * PAGES_PER_BLOCK + 1;
+			var endPage = startPage + PAGES_PER_BLOCK - 1;
+			var html = '';
+			
+			for(var i = startPage ; i <= endPage ; i ++) {
+				html += "<li class='page-item page page" + i + "'><a class='page-link'>"+ i +"</a></li>"
+			}
+			html = "<li class='page-item page-prev'><a class='page-link'><span'>&laquo;</span></a></li>" + html + "<li class='page-item page-next'><a class='page-link'><span'>&raquo;</span></a></li>";
+			$('#ul-pagination').html(html);
+			
+			$('#ul-pagination li.page').removeClass('active');
+			$('#ul-pagination li.page' + currentPage).addClass('active');
+		}
+		
+		// 테이블 렌더링
+		function tableRender(response) {
+			if(response.body.blogs.length == 0) {
+				$("#table-blogs tbody").html("<tr><th class='text-center' scope='row' colspan='6'>검색결과가 없습니다.</th></tr>");
+				return;
+			}
+			var html = response.body.blogs.map(function(blog) {
+				return "<tr><th>"+blog.blogname+"</th><td>"+ blog.title +"</td><td>"+ blog.contents +"</td><td>"+ blog.datetime +"</td><td><img src='"+ blog.thumbnail +"' /></td><td><a class='btn btn-sm btn-secondary btn-outlined' target='_blank' href='"+blog.url+"'>링크</a></td></tr>";
+			});
+			$("#table-blogs tbody").html(html);
+			
+		}
+		
+		
+		// 페이지네이션 클릭
+		function onClickPage() {
+			changePage($(this).children().text());
+		}
+		
+		// 페이지 변경
+		function changePage(page, isSearch) {
+			if(page < 1 || page > maxPage) {
+				return;
+			}
+			
+			currentPage = Number(page);
+			getBlogs(isSearch);
+		}
+		
+		// 검색버튼 클릭
+		$('#btn-search').click(function() { changePage(1, true) });
+		
+		
+		// 키워드 클릭
+		$('.btn-keyword').click(function(e) {
+			var keyword = $(this).find('.span-keyword').text();
+			
+			$("#input-search-query").val(keyword);
+			changePage(1);
+		});
+		
+		
+		// 페이지네이션 클릭
+		$('#ul-pagination').on('click', 'li.page', onClickPage);
+		$('#ul-pagination').on('click', 'li.page-prev', function() { changePage(currentPage - 1) });
+		$('#ul-pagination').on('click', 'li.page-next', function() { changePage(currentPage + 1) });
+		
+		
+		changePage(1, true);
+		
+		
+	});
+</script>
+</html>

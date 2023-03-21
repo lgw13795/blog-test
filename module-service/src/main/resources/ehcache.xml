@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd
+        http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
+  
+ 	
+	<cache-template name="cache-template">
+		<expiry>
+			<ttl unit="seconds">1</ttl>
+   		</expiry>
+   		
+   		<heap>20</heap>
+   
+ 	</cache-template>
+
+	<cache alias="getBlogMediator" uses-template="cache-template"></cache>
+	<cache alias="getTop10SearchKeywords" uses-template="cache-template"></cache>
+	
+</config>

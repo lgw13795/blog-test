@@ -1,0 +1,15 @@
+@charset "UTF-8";
+
+body {
+	background: #f5f5f5;
+}
+
+
+.page-link {
+	cursor: pointer;
+}
+
+
+body > div.wrap {
+	background: white; box-shadow: 2px 4px 4px #aaa; min-height: 90vh;
+}

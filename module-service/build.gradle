@@ -1,0 +1,54 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.9'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.kakaobank.service'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+ext {
+    set('springCloudVersion', "2021.0.3")
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+	// web
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// openfeign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+	// korean analyzer
+	implementation 'com.github.shin285:KOMORAN:3.3.4'
+
+	// cache
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.ehcache:ehcache:3.10.0'
+	implementation 'javax.cache:cache-api:1.1.1'
+
+
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

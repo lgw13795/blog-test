@@ -1,0 +1,3 @@
+rootProject.name = 'kakaobank-module-master'
+include 'module-service'
+include 'module-database'
