@@ -71,10 +71,10 @@
 | 파라미터 유효성 확인   | org.springframework.boot:spring-boot-starter-validation |
 | 캐시 지원         | org.springframework.boot:spring-boot-starter-cache   |
 | 외부 API 호출     | org.springframework.cloud:spring-cloud-starter-openfeign   |
-| 캐시 지원         | org.ehcache:ehcache:3.10.0                                       |
-| 캐시 지원         | javax.cache:cache-api:1.1.1                                       |
+| 캐시 지원         | org.ehcache:ehcache                                     |
+| 캐시 지원         | javax.cache:cache-api                                    |
 | H2 인메모리 DB    | com.h2database:h2                                       |
-| 형태소 분석기       | com.github.shin285:KOMORAN:3.3.4   |
+| 형태소 분석기       | com.github.shin285:KOMORAN   |
 | 롬복 객체 함수 자동완성 | org.projectlombok:lombok                                |
 
 ## 4. 멀티모듈
